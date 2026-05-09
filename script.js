@@ -85,8 +85,10 @@ const selSelect = document.getElementById('selecaoId');
 const modalTitle = document.getElementById('modalTitle');
 const modalPreco = document.getElementById('modalPreco');
 const inputSlug = document.getElementById('pacoteSlug');
+const orderBumpArea = document.getElementById('orderBumpArea');
+const orderBumpCheck = document.getElementById('orderBumpCheck');
 
-// Mock preços (na vida real isso viria do back)
+// Mock preços
 const PACOTES = {
   'pacotinho': { nome: 'Pacotinho', preco: 4.00, slug: 'pacotinho', type: 'base' },
   'equipe': { nome: 'Equipe Completa', preco: 34.00, slug: 'equipe-completa', type: 'selecao' },
@@ -95,17 +97,39 @@ const PACOTES = {
   'ultimate': { nome: 'Tudo Incluso', preco: 399.00, slug: 'ultimate', type: 'base' }
 };
 
+let currentPackPrice = 0;
+
+function updateModalPrice() {
+  let finalPrice = currentPackPrice;
+  if (orderBumpCheck.checked) finalPrice += 49.00;
+  modalPreco.textContent = `— R$ ${finalPrice.toFixed(2).replace('.', ',')}`;
+}
+
+orderBumpCheck.addEventListener('change', updateModalPrice);
+
 // Abre modal
-document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+document.querySelectorAll('.pkg-btn').forEach(btn => {
   btn.addEventListener('click', async (e) => {
-    e.preventDefault();
     const id = btn.id.replace('btn-', '');
     const pack = PACOTES[id];
-    if (!pack) return showToast('Pacote não encontrado.');
-
+    
+    // Se não for um botão de pacote (ex: botão do banner hero), deixa o link funcionar
+    if (!pack) return;
+    
+    e.preventDefault();
     modalTitle.textContent = pack.nome;
-    modalPreco.textContent = `— R$ ${pack.preco.toFixed(2)}`;
+    currentPackPrice = pack.preco;
     inputSlug.value = pack.slug;
+    
+    // Order Bump só aparece se não for pacotes que já incluem os especiais
+    if (pack.slug !== 'pack-especiais' && pack.slug !== 'ultimate') {
+      orderBumpArea.style.display = 'block';
+      orderBumpCheck.checked = false;
+    } else {
+      orderBumpArea.style.display = 'none';
+      orderBumpCheck.checked = false;
+    }
+    updateModalPrice();
     
     // Mostra combo de seleção se for pacote de equipe
     if (pack.type === 'selecao') {
@@ -118,9 +142,9 @@ document.querySelectorAll('[id^="btn-"]').forEach(btn => {
             headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJubWFyY2Z6YXJxZGJqYWNwc2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMDg3MjEsImV4cCI6MjA5Mzg4NDcyMX0.Jw_4buYnRafB_FZK3hH2naetI5khs9qC3SId7AGPa28' }
           });
           const data = await res.json();
-          selSelect.innerHTML = '<option value="">Selecione uma seleção...</option>' + 
+          selSelect.innerHTML = '<option value="">Selecione a seleção desejada...</option>' + 
             data.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
-        } catch(e) {
+        } catch(err) {
           selSelect.innerHTML = '<option value="">Erro ao carregar</option>';
         }
       }
@@ -133,10 +157,19 @@ document.querySelectorAll('[id^="btn-"]').forEach(btn => {
   });
 });
 
-closeBtn.addEventListener('click', () => {
+function closeCheckoutModal() {
   modal.classList.remove('open');
   document.getElementById('pixArea').style.display = 'none';
   form.style.display = 'block';
+}
+
+closeBtn.addEventListener('click', closeCheckoutModal);
+
+// Fechar clicando no fundo escuro
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    closeCheckoutModal();
+  }
 });
 
 // Submit Form (Gerar PIX)
@@ -149,7 +182,8 @@ form.addEventListener('submit', async (e) => {
     cpf: document.getElementById('cpf').value,
     cupom: document.getElementById('cupom').value,
     pacote_slug: inputSlug.value,
-    selecao_id: selSelect.required ? parseInt(selSelect.value) : null
+    selecao_id: selSelect.required ? parseInt(selSelect.value) : null,
+    order_bump: orderBumpCheck.checked
   };
 
   const btnPagar = document.getElementById('btnPagar');

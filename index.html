@@ -508,8 +508,19 @@
           <label for="cupom">Cupom de Desconto (Opcional)</label>
           <input type="text" id="cupom" placeholder="Ex: COPA26">
         </div>
+
+        <!-- ORDER BUMP -->
+        <div class="order-bump" id="orderBumpArea" style="display: none;">
+          <label class="ob-label">
+            <input type="checkbox" id="orderBumpCheck">
+            <div class="ob-content">
+              <span class="ob-title">🔥 Oferta Única: Adicione as <span>Figurinhas Especiais</span></span>
+              <p class="ob-desc">Leve todos os cards brilhantes e lendários (Messi, CR7, Mbappé) por apenas <strong>R$ 49,00</strong> (de R$ 79).</p>
+            </div>
+          </label>
+        </div>
         
-        <button type="submit" class="btn-primary" style="width:100%; margin-top: 0.5rem;" id="btnPagar">
+        <button type="submit" class="btn-primary" style="width:100%; margin-top: 1rem;" id="btnPagar">
           Gerar PIX <span id="modalPreco"></span>
         </button>
         <div class="loader" id="loader"></div>

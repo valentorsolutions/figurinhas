@@ -110,6 +110,7 @@ Deno.serve(async (req: Request) => {
       pacote_slug,
       selecao_id,
       cupom,
+      order_bump, // Recebe do front
     } = await req.json();
 
     if (!nome || !email || !cpf || !pacote_slug) {
@@ -119,7 +120,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 1. Buscar pacote
+    // 1. Buscar pacote principal
     const { data: pacote, error: peErr } = await supabase
       .from("pacotes")
       .select("*")
@@ -159,6 +160,20 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // 2.5 Lógica do Order Bump
+    let bumpPacote = null;
+    if (order_bump && pacote.slug !== 'pack-especiais' && pacote.slug !== 'ultimate') {
+      const { data: bp } = await supabase
+        .from("pacotes")
+        .select("*")
+        .eq("slug", "pack-especiais")
+        .single();
+      if (bp) {
+        bumpPacote = bp;
+        valorFinal += 49.00; // Preço promocional do order bump
+      }
+    }
+
     // 3. Criar ou recuperar cliente
     let clienteId: string;
     const { data: clienteExist } = await supabase
@@ -195,13 +210,25 @@ Deno.serve(async (req: Request) => {
 
     if (pdErr) throw new Error(`Erro ao criar pedido: ${pdErr.message}`);
 
-    // 5. Criar item do pedido
-    await supabase.from("itens_pedido").insert({
+    // 5. Criar itens do pedido
+    const itensToInsert = [];
+    itensToInsert.push({
       pedido_id: pedido.id,
       pacote_id: pacote.id,
       selecao_id: selecao_id ?? null,
-      preco_unitario: valorFinal,
+      preco_unitario: pacote.preco - descontoAplicado,
     });
+
+    if (bumpPacote) {
+      itensToInsert.push({
+        pedido_id: pedido.id,
+        pacote_id: bumpPacote.id,
+        selecao_id: null,
+        preco_unitario: 49.00,
+      });
+    }
+
+    await supabase.from("itens_pedido").insert(itensToInsert);
 
     // 6. Criar cobrança PIX na EfiBank
     const descricaoPix = `FigurinhaCopa26 - ${pacote.nome} - Pedido #${pedido.codigo_pedido}`;

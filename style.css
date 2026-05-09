@@ -257,6 +257,31 @@ footer{background:#050f07;border-top:1px solid rgba(251,191,36,0.15);padding:3re
   border-radius: 6px; color: var(--white); font-family: var(--font-body); outline: none; transition: border-color 0.2s;
 }
 .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+.form-group select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; padding-right: 2.5rem; }
+.form-group select option { background: var(--green-dark); color: var(--white); }
+
+/* ORDER BUMP */
+.order-bump {
+  background: rgba(251,191,36,0.1); border: 2px dashed rgba(251,191,36,0.4);
+  border-radius: 6px; padding: 1rem; margin-top: 1rem; margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+.order-bump:hover { background: rgba(251,191,36,0.15); border-color: var(--gold); }
+.ob-label { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; }
+.ob-label input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; width: 22px; height: 22px; border: 2px solid var(--gold);
+  border-radius: 4px; background: rgba(0,0,0,0.3); outline: none; cursor: pointer; flex-shrink: 0; position: relative;
+}
+.ob-label input[type="checkbox"]:checked { background: var(--gold); }
+.ob-label input[type="checkbox"]:checked::after {
+  content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  color: var(--green-dark); font-weight: bold; font-size: 14px;
+}
+.ob-content { display: flex; flex-direction: column; gap: 0.25rem; }
+.ob-title { font-family: var(--font-ui); color: var(--gold); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; }
+.ob-title span { color: var(--green-neon); }
+.ob-desc { font-family: var(--font-body); font-size: 0.8rem; color: rgba(255,255,255,0.8); line-height: 1.3; }
+
 .pix-area { text-align: center; display: none; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 1rem; }
 .pix-qr { max-width: 200px; border-radius: 8px; border: 2px solid var(--gold); margin: 1rem auto; display: block; }
 .pix-code {
